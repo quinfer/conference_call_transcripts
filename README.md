@@ -23,7 +23,16 @@ Install the required packages using:
 pip install -r requirements.txt
 ```
 
-## Data Structure
+## Data Organization
+
+Place your raw transcript files (`.csv.gz` format) in the `raw_data` directory:
+```
+conference_call_transcripts/
+├── raw_data/              # Place your .csv.gz files here
+│   └── *.csv.gz
+├── processed_data/        # Output directory for processed files
+│   └── processed_transcripts.parquet
+```
 
 The pipeline expects input data in CSV format (can be gzipped) with the following key columns:
 - COMPANYNAME: Name of the company
@@ -39,14 +48,15 @@ The pipeline expects input data in CSV format (can be gzipped) with the followin
 
 ### 1. Data Processing
 
-Run the processing script to convert raw CSV files to optimized formats:
-
+1. Place your `.csv.gz` files in the `raw_data` directory
+2. Run the processing script:
 ```bash
 python process_transcripts.py
 ```
 
 This script will:
-- Load and process CSV files in memory-efficient chunks
+- Load and process all `.csv.gz` files from `raw_data` directory
+- Process files in memory-efficient chunks
 - Clean and standardize date formats
 - Save the processed data in multiple formats (default: Parquet)
 - Create a 'processed_data' directory for outputs
@@ -65,11 +75,13 @@ This will generate statistics about:
 - Company-specific patterns
 - Content analysis (text length by component type)
 
-## Output Structure
+## Project Structure
 
 ```
 conference_call_transcripts/
-├── processed_data/
+├── raw_data/              # Input directory for raw files
+│   └── *.csv.gz
+├── processed_data/        # Output directory for processed files
 │   └── processed_transcripts.parquet
 ├── process_transcripts.py
 ├── analyze_transcripts.py
