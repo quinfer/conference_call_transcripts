@@ -14,7 +14,7 @@ def analyze_file_structure(file_path):
     print(f"\nAnalyzing {file_path} (Size: {get_file_size(file_path):.1f} MB)")
     
     # Read just 5 rows to get structure
-    sample = pd.read_csv(file_path, compression='gzip', nrows=5)
+    sample = pd.read_csv(file_path, sep='~', lineterminator='`', compression='gzip', nrows=5)
     print("\nColumns found:")
     for col in sample.columns:
         print(f"- {col}")
@@ -22,20 +22,24 @@ def analyze_file_structure(file_path):
     return sample
 
 def read_custom_format(file_path, chunk_size=100_000):
-    """Read CSV file in chunks with progress tracking"""
+    """Read CSV file in chunks with progress tracking using custom delimiters"""
     total_rows = 0
     chunks = []
     
     # Count total rows for progress bar
     print(f"\nCounting rows in {file_path}...")
-    for chunk in pd.read_csv(file_path, compression='gzip', chunksize=chunk_size):
+    for chunk in pd.read_csv(file_path, sep='~', lineterminator='`', compression='gzip', 
+                           chunksize=chunk_size, on_bad_lines='skip', 
+                           quoting=3, dtype=str):  # quoting=3 disables quote parsing
         total_rows += len(chunk)
     
     print(f"Total rows to process: {total_rows:,}")
     
     # Process chunks with progress bar
     with tqdm(total=total_rows, desc='Processing rows') as pbar:
-        for chunk in pd.read_csv(file_path, compression='gzip', chunksize=chunk_size):
+        for chunk in pd.read_csv(file_path, sep='~', lineterminator='`', compression='gzip', 
+                               chunksize=chunk_size, on_bad_lines='skip',
+                               quoting=3, dtype=str):  # quoting=3 disables quote parsing
             chunks.append(chunk)
             pbar.update(len(chunk))
             
@@ -44,6 +48,15 @@ def read_custom_format(file_path, chunk_size=100_000):
     
     print("\nCombining chunks...")
     return pd.concat(chunks, ignore_index=True)
+
+def process_transcripts(file_path):
+    """Process transcript data from a custom-formatted CSV file"""
+    # Read the data using the custom format function
+    df = read_custom_format(file_path)
+    
+    # Example processing: Print the first few rows
+    print("\nSample of the processed data:")
+    print(df.head())
 
 def save_processed_data(df, base_filename='processed_transcripts', formats=None):
     """Save the processed DataFrame in specified formats"""
